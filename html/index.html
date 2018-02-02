@@ -138,10 +138,8 @@
     }
 
     function onUp(e) {
-        if (!isDragging) return;
 
         canvas.style.cursor = '';
-        isDragging = false;
 
         // Unbind mouse events
         map.off('mousemove', onMove);
@@ -214,6 +212,9 @@
       });
 
       map.on('mouseup', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+  
         mapEl.classList.add('loading');
         var intervals = Array.from(
           document.querySelectorAll('.intervals input[type="checkbox"]:checked')
