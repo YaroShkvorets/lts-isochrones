@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+    <style>
+        #app { position:absolute; top:0; right:0; bottom:0; left:0; }
+        #map { position:absolute; top:0; right:0; bottom:0; left:0; }
+        .mapboxgl-popup-content { color:#000 }
+    </style>
+</head>
+<body>
+  <div id='app' class='col12 contain fill-navy dark clip'>
+    <div id='map'></div>
+    <div class='pin-right pad2'>
+      <a href='#settings' class='button'>Settings</a>
+    </div>
+    <div id='settings' class='col4 pad2 fill-darken3 pin-left offcanvas-left animate scroll-styled'>
+      <a href='#' class='fill-darken2 pad1 icon close button fr'></a>
+      <div class='clearfix'></div>
+      <form>
+        <fieldset>
+          <label for='radius'>Radius</label>
+          <input id='radius' type='number' value='6' class='stretch' />
+        </fieldset>
+        <fieldset>
+          <label for='cellSize'>Cell size</label>
+          <input id='cellSize' type='number' value='0.2' class='stretch' />
+        </fieldset>
+        <fieldset>
+          <label for='concavity'>Concavity</label>
+          <input id='concavity' type='number' value='2' class='stretch' />
+        </fieldset>
+        <fieldset>
+          <label for='lengthThreshold'>Length threshold</label>
+          <input id='lengthThreshold' type='number' value='0' class='stretch' />
+        </fieldset>
+        </fieldset>
+        <fieldset class='checkbox-pill clearfix'>
+          <input type='checkbox' id='deintersect' checked='checked' value='true'>
+          <label for='deintersect' class='button icon check quiet'>deintersect</label>
+        </fieldset>
+        <fieldset class='intervals checkbox-pill clearfix'>
+          <input type='checkbox' id='i5' checked='checked' value=5>
+          <label for='i5' class='button icon check quiet'>5m</label>
+          <input type='checkbox' id='i10' checked='checked' value=10>
+          <label for='i10' class='button icon check quiet'>10m</label>
+          <input type='checkbox' id='i15' checked='checked' value=15>
+          <label for='i15' class='button icon check quiet'>15m</label>
+        </fieldset>
+        <div class='rounded-toggle inline'>
+          <input type='radio' id='kilometers' name='units' value='kilometers' checked='checked'>
+          <label for='kilometers'>kilometers</label>
+          <input type='radio' id='miles' name='units' value='miles'>
+          <label for='miles'>miles</label>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    var args = location.search.replace(/^\?/,'').split('&').reduce(function(o, param) {
+      var keyvalue=param.split('=');
+      o[keyvalue[0]] = keyvalue[1];
+      return o;
+    }, {});
+
+    //mapboxgl.accessToken = args.access_token || localStorage.accessToken;
+    mapboxgl.accessToken = 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g';
+    var mapEl = document.getElementById('map');
+
+    var map = new mapboxgl.Map({
+        container: mapEl,
+        style: 'mapbox://styles/mapbox/light-v8',
+        center: [-75.697927,45.417431],
+        zoom: 13
+    });
+
+    var gridSource = new mapboxgl.GeoJSONSource({
+      data: {
+        type: 'FeatureCollection',
+        features: []
+      }
+    });
+
+    var layers = [
+      [15, '#00aaFF', 0.1],
+      [10, '#00aaFF', 0.2],
+      [5, '#00aaFF', 0.8],
+    ];
+
+    map.on('style.load', function () {
+      map.addSource('grid', gridSource);
+
+      layers.forEach(function (layer, i) {
+        map.addLayer({
+          'id': 'grid-' + i,
+          'type': 'fill',
+          'source': 'grid',
+          'layout': {},
+          'paint': {
+            'fill-color': layer[1],
+            'fill-opacity': layer[2]
+          },
+          'filter': [
+            'all',
+            ['==', '$type', 'Polygon'],
+            ['<=', 'time', layer[0]]
+          ]
+        }, 'road-path');
+      });
+    });
+
+    map.on('click', function (e) {
+      mapEl.classList.add('loading');
+      var intervals = Array.from(
+        document.querySelectorAll('.intervals input[type="checkbox"]:checked')
+      ).map(function(el) { return el.value });
+
+      var params = {
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat,
+        radius: document.getElementById('radius').value,
+        deintersect: document.getElementById('deintersect').checked,
+        cellSize: document.getElementById('cellSize').value,
+        concavity: document.getElementById('concavity').value,
+        lengthThreshold: document.getElementById('lengthThreshold').value,
+        units: document.querySelector('input[name="units"]:checked').value,
+      };
+
+      var url = new URL("http://localhost:4000");
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      (intervals.length > 0 ? intervals : [5, 10, 15]).forEach(interval => url.searchParams.append('intervals', interval));
+
+      console.groupCollapsed(e.lngLat.lng, e.lngLat.lat);
+      console.time('request');
+      fetch(url)
+        .then(response => response.json())
+        .then((data) => {
+          console.log(data);
+          console.timeEnd('request');
+          console.groupEnd();
+          gridSource.setData(data);
+          mapEl.classList.remove('loading');
+        })
+        .catch((error) => {
+          console.error(error);
+          mapEl.classList.remove('loading');
+        });
+    });
+
+    var popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+
+    map.on('mousemove', function(e) {
+      var features = map.queryRenderedFeatures(e.point, {
+        layers: ['grid-0', 'grid-1', 'grid-2', 'grid-3', 'grid-4', 'grid-5']
+      });
+
+      if (!features.length) {
+          popup.remove();
+          return;
+      }
+      var feature = features[0];
+      popup.setLngLat(e.lngLat)
+          .setHTML(feature.properties.time + ' minutes')
+          .addTo(map);
+    });
+  </script>
+
+</body>
+</html>
