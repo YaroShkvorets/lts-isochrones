@@ -4,8 +4,8 @@
     <meta charset='utf-8' />
     <title></title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
     <style>
         #app { position:absolute; top:0; right:0; bottom:0; left:0; }
@@ -84,6 +84,8 @@
     mapboxgl.accessToken = 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g';
     var mapEl = document.getElementById('map');
 
+
+    var coordinates = document.getElementById('coordinates');
     var map = new mapboxgl.Map({
         container: mapEl,
         style: 'mapbox://styles/mapbox/light-v8',
@@ -91,12 +93,61 @@
         zoom: 13
     });
 
-    var gridSource = new mapboxgl.GeoJSONSource({
-      data: {
-        type: 'FeatureCollection',
-        features: []
-      }
-    });
+    var isDragging;
+    var isCursorOverPoint;
+
+    var canvas = map.getCanvasContainer();
+
+    var geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-75.697927,45.417431]
+            }
+        }]
+    };
+    var gridSource = {
+        "type": "FeatureCollection",
+        "features": []
+    };
+
+    function mouseDown() {
+        if (!isCursorOverPoint) return;
+
+        isDragging = true;
+
+        // Set a cursor indicator
+        canvas.style.cursor = 'grab';
+
+        // Mouse events
+        map.on('mousemove', onMove);
+        map.once('mouseup', onUp);
+    }
+
+    function onMove(e) {
+        if (!isDragging) return;
+        var coords = e.lngLat;
+
+        // Set a UI indicator for dragging.
+        canvas.style.cursor = 'grabbing';
+        geojson.features[0].geometry.coordinates = [coords.lng, coords.lat];
+
+        map.getSource('point').setData(geojson);
+    }
+
+    function onUp(e) {
+        if (!isDragging) return;
+
+        canvas.style.cursor = '';
+        isDragging = false;
+
+        // Unbind mouse events
+        map.off('mousemove', onMove);
+    }
+
+
 
     var layers = [
       [15, '#00aaFF', 0.1],
@@ -105,7 +156,16 @@
     ];
 
     map.on('style.load', function () {
-      map.addSource('grid', gridSource);
+      map.addSource('grid', {
+          "type" : "geojson",
+          "data": gridSource
+      });
+
+      map.addSource('point', {
+          "type": "geojson",
+          "data": geojson
+      });
+
 
       layers.forEach(function (layer, i) {
         map.addLayer({
@@ -124,66 +184,96 @@
           ]
         }, 'road-path');
       });
-    });
 
-    map.on('click', function (e) {
-      mapEl.classList.add('loading');
-      var intervals = Array.from(
-        document.querySelectorAll('.intervals input[type="checkbox"]:checked')
-      ).map(function(el) { return el.value });
-
-      var params = {
-        lng: e.lngLat.lng,
-        lat: e.lngLat.lat,
-        radius: document.getElementById('radius').value,
-        deintersect: document.getElementById('deintersect').checked,
-        cellSize: document.getElementById('cellSize').value,
-        concavity: document.getElementById('concavity').value,
-        lengthThreshold: document.getElementById('lengthThreshold').value,
-        units: document.querySelector('input[name="units"]:checked').value,
-        dir: document.querySelector('input[name="dir"]:checked').value,
-      };
-
-      var url = new URL("http://localhost:4000");
-      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-      (intervals.length > 0 ? intervals : [5, 10, 15]).forEach(interval => url.searchParams.append('intervals', interval));
-
-      console.groupCollapsed(e.lngLat.lng, e.lngLat.lat);
-      console.time('request');
-      fetch(url)
-        .then(response => response.json())
-        .then((data) => {
-          console.log(data);
-          console.timeEnd('request');
-          console.groupEnd();
-          gridSource.setData(data);
-          mapEl.classList.remove('loading');
-        })
-        .catch((error) => {
-          console.error(error);
-          mapEl.classList.remove('loading');
-        });
-    });
-
-    var popup = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false
-    });
-
-    map.on('mousemove', function(e) {
-      var features = map.queryRenderedFeatures(e.point, {
-        layers: ['grid-0', 'grid-1', 'grid-2', 'grid-3', 'grid-4', 'grid-5']
+      map.addLayer({
+          "id": "point",
+          "type": "circle",
+          "source": "point",
+          "paint": {
+              "circle-radius": 10,
+              "circle-color": "#3887be"
+          }
       });
 
-      if (!features.length) {
-          popup.remove();
-          return;
-      }
-      var feature = features[0];
-      popup.setLngLat(e.lngLat)
-          .setHTML(feature.properties.time + ' minutes')
-          .addTo(map);
+      map.on('mouseenter', 'point', function() {
+          map.setPaintProperty('point', 'circle-color', '#3bb2d0');
+          canvas.style.cursor = 'move';
+          isCursorOverPoint = true;
+          map.dragPan.disable();
+      });
+
+      map.on('mousedown', mouseDown);
+
+      map.on('mouseleave', 'point', function(e) {
+        map.setPaintProperty('point', 'circle-color', '#3887be');
+        canvas.style.cursor = '';
+        isCursorOverPoint = false;
+        map.dragPan.enable();
+
+
+      });
+
+      map.on('mouseup', function(e) {
+        mapEl.classList.add('loading');
+        var intervals = Array.from(
+          document.querySelectorAll('.intervals input[type="checkbox"]:checked')
+        ).map(function(el) { return el.value });
+
+        var params = {
+          lng: e.lngLat.lng,
+          lat: e.lngLat.lat,
+          radius: document.getElementById('radius').value,
+          deintersect: document.getElementById('deintersect').checked,
+          cellSize: document.getElementById('cellSize').value,
+          concavity: document.getElementById('concavity').value,
+          lengthThreshold: document.getElementById('lengthThreshold').value,
+          units: document.querySelector('input[name="units"]:checked').value,
+          dir: document.querySelector('input[name="dir"]:checked').value,
+        };
+
+        var url = new URL("http://localhost:4000");
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        (intervals.length > 0 ? intervals : [5, 10, 15]).forEach(interval => url.searchParams.append('intervals', interval));
+
+        console.groupCollapsed(e.lngLat.lng, e.lngLat.lat);
+        console.time('request');
+        fetch(url)
+          .then(response => response.json())
+          .then((data) => {
+            console.log(data);
+            console.timeEnd('request');
+            console.groupEnd();
+            map.getSource('grid').setData(data);
+            mapEl.classList.remove('loading');
+          })
+          .catch((error) => {
+            console.error(error);
+            mapEl.classList.remove('loading');
+          });
+      });
+/* uncomment to show popup
+      var popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false
+      });
+
+      map.on('mousemove', function(e) {
+        var features = map.queryRenderedFeatures(e.point, {
+          layers: ['grid-0', 'grid-1', 'grid-2']
+        });
+
+        if (!features.length) {
+            popup.remove();
+            return;
+        }
+        var feature = features[0];
+        popup.setLngLat(e.lngLat)
+            .setHTML(feature.properties.time + ' minutes')
+            .addTo(map);
+      });
+*/
     });
+
   </script>
 
 </body>
