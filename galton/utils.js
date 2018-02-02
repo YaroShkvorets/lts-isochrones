@@ -20,6 +20,13 @@ const parseUnits = (units) => {
   return defaults.units;
 };
 
+const parseDir = (dir) => {
+  if (dir) {
+    return dir;
+  }
+  return defaults.dir;
+};
+
 const parsers = {
   lng: parseFloat,
   lat: parseFloat,
@@ -29,7 +36,8 @@ const parsers = {
   lengthThreshold: parseFloat,
   deintersect: parseBoolean,
   intervals: parseIntervals,
-  units: parseUnits
+  units: parseUnits,
+  dir: parseDir
 };
 
 const parseQuery = query =>

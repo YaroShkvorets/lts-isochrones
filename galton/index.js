@@ -11,15 +11,21 @@ const parseQuery = require('./utils');
  * @returns {Koa} Koa instance
  */
 const galton = (config) => {
-  const osrm = new OSRM({
+  let osrm = new OSRM({
     path: config.osrmPath,
     shared_memory: config.sharedMemory
   });
+  let loadedOsrmPath = config.osrmPath;
 
   return (req, res) => {
     const { query } = url.parse(req.url, true);
-    const options = Object.assign({}, parseQuery(query), { osrm });
-
+    const options = Object.assign({}, parseQuery(query),{osrm});
+    const newOsrmPath = "data/"+options.dir+"/data.osrm";
+    if(loadedOsrmPath!=newOsrmPath)
+    {
+      options.osrm = osrm = new OSRM({path: newOsrmPath})
+      loadedOsrmPath = newOsrmPath;
+    }
     if (config.cors) {
      res.setHeader('Access-Control-Allow-Origin', '*');
     }

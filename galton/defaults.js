@@ -16,12 +16,13 @@
  */
 const defaults = {
   radius: 6,
-  cellSize: 0.2,
+  cellSize: 0.1,
   concavity: 2,
   deintersect: true,
-  intervals: [10, 20, 30],
+  intervals: [5, 10, 15],
   lengthThreshold: 0,
-  units: 'kilometers'
+  units: 'kilometers',
+  dir: 'lts4'
 };
 
 module.exports = defaults;

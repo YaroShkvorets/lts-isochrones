@@ -23,13 +23,23 @@
       <a href='#' class='fill-darken2 pad1 icon close button fr'></a>
       <div class='clearfix'></div>
       <form>
+        <div class='rounded-toggle inline'>
+          <input type='radio' name='dir' id='lts1' value='lts1'>
+          <label for='lts1' >LTS-1</label>
+          <input type='radio' name='dir' id='lts2' value='lts2'>
+          <label for='lts2' >LTS-2</label>
+          <input type='radio' name='dir' id='lts3' value='lts3'>
+          <label for='lts3' >LTS-3</label>
+          <input type='radio' name='dir' id='lts4' value='lts4' checked='checked'>
+          <label for='lts4' >LTS-4</label>
+        </div><br><br>
         <fieldset>
           <label for='radius'>Radius</label>
           <input id='radius' type='number' value='6' class='stretch' />
         </fieldset>
         <fieldset>
           <label for='cellSize'>Cell size</label>
-          <input id='cellSize' type='number' value='0.2' class='stretch' />
+          <input id='cellSize' type='number' value='0.1' class='stretch' />
         </fieldset>
         <fieldset>
           <label for='concavity'>Concavity</label>
@@ -52,6 +62,7 @@
           <input type='checkbox' id='i15' checked='checked' value=15>
           <label for='i15' class='button icon check quiet'>15m</label>
         </fieldset>
+
         <div class='rounded-toggle inline'>
           <input type='radio' id='kilometers' name='units' value='kilometers' checked='checked'>
           <label for='kilometers'>kilometers</label>
@@ -130,6 +141,7 @@
         concavity: document.getElementById('concavity').value,
         lengthThreshold: document.getElementById('lengthThreshold').value,
         units: document.querySelector('input[name="units"]:checked').value,
+        dir: document.querySelector('input[name="dir"]:checked').value,
       };
 
       var url = new URL("http://localhost:4000");
