@@ -1,1 +1,5 @@
-/data/lts*/*
+data/lts/*
+data/lts1/data*
+data/lts2/data*
+data/lts3/data*
+data/lts4/data*

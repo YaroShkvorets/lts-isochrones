@@ -32,7 +32,7 @@ const config = minimist(process.argv.slice(2), {
     concavity: defaults.concavity,
     cors: true,
     deintersect: 'true',
-    intervals: '5 10 15',
+    intervals: '3 6 9 12 15',
     lengthThreshold: defaults.lengthThreshold,
     port: 4000,
     sharedMemory: false,

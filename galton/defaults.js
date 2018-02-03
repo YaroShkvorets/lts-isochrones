@@ -15,11 +15,11 @@
  * @param {string} [options.units='kilometers'] - any of the options supported by turf units
  */
 const defaults = {
-  radius: 6,
-  cellSize: 0.1,
+  radius: 3,
+  cellSize: 0.05,
   concavity: 2,
   deintersect: true,
-  intervals: [5, 10, 15],
+  intervals: [3, 6, 9, 12, 15],
   lengthThreshold: 0,
   units: 'kilometers',
   dir: 'lts4'
