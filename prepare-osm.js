@@ -72,8 +72,7 @@ for (let i in levels) {
     console.log(level.name, "Nodes preserved:", nodesPreserved, "Nodes deleted:", nodesDeleted);
 */
     const ways = doc.getElementsByTagName('way');
-    let waysDeleted = 0;
-    let waysPreserved = 0;
+    let waysDeleted = waysPreserved = waysService = 0;
     for (let i in ways) {
       let way = ways[i]
       for(let j in way.attributes){
@@ -84,15 +83,32 @@ for (let i in levels) {
             waysPreserved++
           }
           else {
-            way.parentNode.removeChild(way)
-            waysDeleted++
+            let service = false;
+            for(let k in way.childNodes){
+              let node = way.childNodes[k]
+              if(!node.attributes){continue}
+              let attr = node.attributes[0]
+              if (node.attributes[0].value=='service' && node.attributes[1].value=='parking_aisle'
+                  || node.attributes[0].value=='service' && node.attributes[1].value=='driveway'
+                  || node.attributes[0].value=='footway' && node.attributes[1].value!='sidewalk') {
+                    service = true;
+                    break;
+                  }
+            }
+            if(service){
+              waysService++;
+            }
+            else{
+              way.parentNode.removeChild(way)
+              waysDeleted++
+            }
           }
 
         }
       }
     }
 
-    console.log(level.name, "Ways preserved:", waysPreserved, "Ways deleted:", waysDeleted);
+    console.log(level.name, "Ways preserved:", waysPreserved, "Ways service:", waysService, "Ways deleted:", waysDeleted);
 
     fs.writeFile(level.outLtsOsmile, serializer.serializeToString(doc), function(err) {
       if(err) {
@@ -102,7 +118,6 @@ for (let i in levels) {
     });
 
   });
-  console.log("Done");
 }
 
 
