@@ -11,10 +11,11 @@ draw isochrones based on level of traffic stress
 
     `node prepare-osm.js`
 
-4. Prepare osrm data:
+4. Prepare osrm data for each lts* dir:
 
     `../../node_modules/osrm/lib/binding/osrm-extract -p ../../node_modules/osrm/profiles/bicycle.lua ./lts1/data.osm`
-    `../../../node_modules/osrm/lib/binding/osrm-contract ./lts1/data.osrm`
+    
+    `../../node_modules/osrm/lib/binding/osrm-contract ./lts1/data.osrm`
     
 5. Run isochrone server:
 
