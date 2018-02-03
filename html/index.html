@@ -151,6 +151,7 @@
       [15, '#00aaFF', 0.1],
       [10, '#00aaFF', 0.2],
       [5, '#00aaFF', 0.8],
+      [5, '#FF0000', 0.8],
     ];
 
     map.on('style.load', function () {
@@ -166,21 +167,39 @@
 
 
       layers.forEach(function (layer, i) {
-        map.addLayer({
-          'id': 'grid-' + i,
-          'type': 'fill',
-          'source': 'grid',
-          'layout': {},
-          'paint': {
-            'fill-color': layer[1],
-            'fill-opacity': layer[2]
-          },
-          'filter': [
-            'all',
-            ['==', '$type', 'Polygon'],
-            ['<=', 'time', layer[0]]
-          ]
-        }, 'road-path');
+        if(i==3){
+          map.addLayer({
+            'id': 'grid-3',
+            "type": "circle",
+            'source': 'grid',
+            "paint": {
+              "circle-radius": 10,
+              "circle-color": "#ff0000"
+            },
+            'filter': [
+              'all',
+              ['==', '$type', 'Point']
+            ]
+          })
+        }
+        else{
+
+          map.addLayer({
+            'id': 'grid-' + i,
+            'type': 'fill',
+            'source': 'grid',
+            'layout': {},
+            'paint': {
+              'fill-color': layer[1],
+              'fill-opacity': layer[2]
+            },
+            'filter': [
+              'all',
+              ['==', '$type', 'Polygon'],
+              ['<=', 'time', layer[0]]
+            ]
+          }, 'road-path');
+        }
       });
 
       map.addLayer({
@@ -214,7 +233,7 @@
       map.on('mouseup', function(e) {
         if (!isDragging) return;
         isDragging = false;
-  
+
         mapEl.classList.add('loading');
         var intervals = Array.from(
           document.querySelectorAll('.intervals input[type="checkbox"]:checked')

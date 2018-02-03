@@ -107,6 +107,7 @@ const isochrone = (startPoint, options) => {
         const polygons = makePolygons(pointsByInterval, options);
 
         const features = options.deintersect ? deintersect(polygons) : polygons;
+        features.push(helpers.point([table.destinations[0].location[0], table.destinations[0].location[1]]));
         const featureCollection = rewind(helpers.featureCollection(features));
 
         resolve(featureCollection);

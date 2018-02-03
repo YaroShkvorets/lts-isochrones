@@ -1,6 +1,6 @@
 const url = require('url');
 const OSRM = require('osrm');
-const isochrone = require('isochrone');
+const isochrone = require('./isochrone');
 const parseQuery = require('./utils');
 
 /**

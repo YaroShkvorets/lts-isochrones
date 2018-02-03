@@ -4,7 +4,7 @@ var XMLSerializer = require('xmldom').XMLSerializer;
 const fs = require('fs');
 
 
-const inOsmCity = "data/ottawa-core-extracted.osm"
+const inOsmCity = "data/ottawa-extracted.osm"
 
 const levels = [{name: "LTS-1", inLtsJsonFile: "data/lts/level_1.json", outLtsOsmile: "data/lts1/data.osm", ways: []},
                 {name: "LTS-2", inLtsJsonFile: "data/lts/level_2.json", outLtsOsmile: "data/lts2/data.osm", ways: []},
