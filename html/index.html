@@ -41,6 +41,7 @@
       <a href='#' class='fill-darken2 pad1 icon close button fr'></a>
       <div class='clearfix'></div>
       <form>
+        <h5>Level of Stress</h5>
         <div class='rounded-toggle inline'>
           <input type='radio' name='dir' id='lts1' value='lts1'>
           <label for='lts1' >LTS-1</label>
@@ -51,28 +52,8 @@
           <input type='radio' name='dir' id='lts4' value='lts4' checked='checked'>
           <label for='lts4' >LTS-4</label>
         </div><br><br>
-        <fieldset>
-          <label for='radius'>Radius</label>
-          <input id='radius' type='number' value='3' class='stretch' />
-        </fieldset>
-        <fieldset>
-          <label for='cellSize'>Cell size</label>
-          <input id='cellSize' type='number' value='0.1' class='stretch' />
-        </fieldset>
-        <fieldset>
-          <label for='concavity'>Concavity</label>
-          <input id='concavity' type='number' value='2' class='stretch' />
-        </fieldset>
-        <fieldset>
-          <label for='lengthThreshold'>Length threshold</label>
-          <input id='lengthThreshold' type='number' value='0' class='stretch' />
-        </fieldset>
-        </fieldset>
+        <h5>Travel time</h5>
         <fieldset class='checkbox-pill clearfix'>
-          <input type='checkbox' id='deintersect' checked='checked' value='true'>
-          <label for='deintersect' class='button icon check quiet'>deintersect</label>
-        </fieldset>
-        <fieldset class='intervals checkbox-pill clearfix'>
           <input type='checkbox' id='i3' checked='checked' value=3>
           <label for='i3' class='button icon check quiet'>3m</label>
           <input type='checkbox' id='i6' checked='checked' value=6>
@@ -84,13 +65,56 @@
           <input type='checkbox' id='i15' checked='checked' value=15>
           <label for='i15' class='button icon check quiet'>15m</label>
         </fieldset>
-
+        <h5>Details</h5>
         <div class='rounded-toggle inline'>
-          <input type='radio' id='kilometers' name='units' value='kilometers' checked='checked'>
-          <label for='kilometers'>kilometers</label>
-          <input type='radio' id='miles' name='units' value='miles'>
-          <label for='miles'>miles</label>
+          <input type='radio' name='details' id='details-low' value='4'>
+          <label for='details-low' >Low</label>
+          <input type='radio' name='details' id='details-medium' value='2' checked='checked'>
+          <label for='details-medium' >Medium</label>
+          <input type='radio' name='details' id='details-high' value='1'>
+          <label for='details-high' >High</label>
+        </div><br><br>
+        <h5>Street LTS legend</h5>
+        <fieldset class='checkbox-pill clearfix'>
+          <input type='checkbox' id='legend-lts1' checked='checked' value=1>
+          <label for='legend-lts1' id='legend-lts1-label' class='button icon check quiet' style="width:300px;text-align:left;">LTS-1</label><br>
+          <input type='checkbox' id='legend-lts2' checked='checked' value=2>
+          <label for='legend-lts2' id='legend-lts2-label' class='button icon check quiet' style="width:300px;text-align:left;">LTS-2</label><br>
+          <input type='checkbox' id='legend-lts3' checked='checked' value=3>
+          <label for='legend-lts3' id='legend-lts3-label' class='button icon check quiet' style="width:300px;text-align:left;">LTS-3</label><br>
+          <input type='checkbox' id='legend-lts4' checked='checked' value=4>
+          <label for='legend-lts4' id='legend-lts4-label' class='button icon check quiet' style="width:300px;text-align:left;">LTS-4</label>
+        </fieldset>
+        <div style="visibility:hidden">
+          <fieldset>
+            <label for='radius'>Radius</label>
+            <input id='radius' type='number' value='3' class='stretch' />
+          </fieldset>
+          <fieldset>
+            <label for='cellSize'>Cell size</label>
+            <input id='cellSize' type='number' value='0.1' class='stretch' />
+          </fieldset>
+          <fieldset>
+            <label for='concavity'>Concavity</label>
+            <input id='concavity' type='number' value='2' class='stretch' />
+          </fieldset>
+          <fieldset>
+            <label for='lengthThreshold'>Length threshold</label>
+            <input id='lengthThreshold' type='number' value='0' class='stretch' />
+          </fieldset>
+          </fieldset>
+          <fieldset class='checkbox-pill clearfix'>
+            <input type='checkbox' id='deintersect' checked='checked' value='true'>
+            <label for='deintersect' class='button icon check quiet'>deintersect</label>
+          </fieldset>
+          <div class='rounded-toggle inline'>
+            <input type='radio' id='kilometers' name='units' value='kilometers' checked='checked'>
+            <label for='kilometers'>kilometers</label>
+            <input type='radio' id='miles' name='units' value='miles'>
+            <label for='miles'>miles</label>
+          </div>
         </div>
+
       </form>
     </div>
   </div>
@@ -111,12 +135,14 @@
     var map = new mapboxgl.Map({
         container: mapEl,
         style: 'mapbox://styles/mapbox/light-v8',
+        //style: 'mapbox://styles/zzptichka.53bf2frg',
+        //style: 'mapbox://styles/zzptichka/cj951wvae5toi2smwzlmk6olk',
         center: [-75.697927,45.417431],
         zoom: 13
     });
 
     map.addControl(new mapboxgl.ScaleControl({
-        maxWidth: 80,
+        maxWidth: 100,
         unit: 'metric'
     }));
 
@@ -139,6 +165,8 @@
         "type": "FeatureCollection",
         "features": []
     };
+
+
 
     function mouseDown() {
         if (!isCursorOverPoint) return;
@@ -182,14 +210,21 @@
       [3, '#00aaFF', 1],
       [0, '#FF0000', 1],
     ];*/
-    var layers = [
-          [15, '#C8D9EA', 1],
-          [12, '#96B8E6', 1],
-          [9, '#6497E2', 1],
-          [6, '#3276DE', 1],
-          [3, '#0055DB', 1],
-          [0, '#f93', 1],
+    var isochroneLayers = [
+          {time:15, color:'#C8D9EA', opacity:1},
+          {time:12, color:'#96B8E6', opacity:1},
+          {time:9, color:'#6497E2', opacity:1},
+          {time:6, color:'#3276DE', opacity:1},
+          {time:3, color:'#0055DB', opacity:1},
+          {time:0, color:'#ff9933', opacity:1}
         ];
+    var ltsLayers = [
+          {id:"legend-lts1", name:'LTS 1 - Suitable for children', color:'#0099cc', opacity:1, tileset:'mapbox://zzptichka.53bf2frg', layer:'level_1-45ccc2'},
+          {id:"legend-lts2", name:'LTS-2 - Low stress', color:'#1C7C54', opacity:1, tileset:'mapbox://zzptichka.771hbw7i', layer:'level_2-18vk61'},
+          {id:"legend-lts3", name:'LTS-3 - Medium stress', color:'#F0C808', opacity:1, tileset:'mapbox://zzptichka.5jgkszgd', layer:'level_3-97ctwn'},
+          {id:"legend-lts4", name:'LTS-4 - High stress', color:'#DD5454', opacity:1, tileset:'mapbox://zzptichka.4ioiilcy', layer:'level_4-b8wity'}
+        ];
+
     map.on('style.load', function () {
       map.addSource('grid', {
           "type" : "geojson",
@@ -201,16 +236,37 @@
           "data": point
       });
 
+      ltsLayers.forEach(function (layer, i) {
 
-      layers.forEach(function (layer, i) {
-        if(i==5){
+        map.addLayer({
+          "id": layer.id,
+          "type": "line",
+          "source": {
+              type: 'vector',
+              url: layer.tileset,
+          },
+          "source-layer": layer.layer,
+          "layout": {
+              "line-join": "round",
+              "line-cap": "round"
+          },
+          "paint": {
+              "line-color": layer.color,
+              "line-width": 2
+          }
+        });
+        document.getElementById(layer.id+'-label').innerHTML = '<span style="display: inline-block;width:50px; height:8px;background-color: '+layer.color+'"></span>&nbsp;'+layer.name;
+      });
+
+      isochroneLayers.forEach(function (layer, i) {
+        if(i==isochroneLayers.length-1){
           map.addLayer({
             'id': 'grid-' + i,
             "type": "circle",
             'source': 'grid',
             "paint": {
               "circle-radius": 10,
-              "circle-color": layer[1]
+              "circle-color": layer.color
             },
             'filter': [
               'all',
@@ -226,14 +282,14 @@
             'source': 'grid',
             'layout': {},
             'paint': {
-              'fill-color': layer[1],
-              'fill-opacity': layer[2],
+              'fill-color': layer.color,
+              'fill-opacity': layer.opacity,
               'fill-outline-color': "#0088ff"
             },
             'filter': [
               'all',
               ['==', '$type', 'Polygon'],
-              ['<=', 'time', layer[0]]
+              ['<=', 'time', layer.time]
             ]
           }, 'road-path');
         }
@@ -281,10 +337,11 @@
           lat: pLat,
           radius: document.getElementById('radius').value,
           deintersect: document.getElementById('deintersect').checked,
-          cellSize: document.getElementById('cellSize').value,
+          //cellSize: document.getElementById('cellSize').value,
           concavity: document.getElementById('concavity').value,
           lengthThreshold: document.getElementById('lengthThreshold').value,
           units: document.querySelector('input[name="units"]:checked').value,
+          cellSize: document.querySelector('input[name="details"]:checked').value * 0.03,
           dir: document.querySelector('input[name="dir"]:checked').value,
         };
 
@@ -318,10 +375,23 @@
 
       });
 
+      function toggleLayer (checkbox) {
+        map.setLayoutProperty(checkbox.currentTarget.id, 'visibility', checkbox.currentTarget.checked?'visible':'none');
+      }
+
       document.getElementById('lts1').onchange = fetchIsochrones
       document.getElementById('lts2').onchange = fetchIsochrones
       document.getElementById('lts3').onchange = fetchIsochrones
       document.getElementById('lts4').onchange = fetchIsochrones
+      document.getElementById('details-low').onchange = fetchIsochrones
+      document.getElementById('details-medium').onchange = fetchIsochrones
+      document.getElementById('details-high').onchange = fetchIsochrones
+      document.getElementById('legend-lts1').onclick = toggleLayer
+      document.getElementById('legend-lts2').onclick = toggleLayer
+      document.getElementById('legend-lts3').onclick = toggleLayer
+      document.getElementById('legend-lts4').onclick = toggleLayer
+
+
 
 /* uncomment to show popup
       var popup = new mapboxgl.Popup({
