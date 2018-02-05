@@ -3,3 +3,5 @@ data/lts1/*
 data/lts2/*
 data/lts3/*
 data/lts4/*
+
+node_modules/
