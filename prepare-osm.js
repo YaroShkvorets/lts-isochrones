@@ -2,9 +2,30 @@ const reader = require('geojson-writer').reader
 const xmldom = require('xmldom').DOMParser
 var XMLSerializer = require('xmldom').XMLSerializer;
 const fs = require('fs');
+var progressBar = require('progress');
+
+const args = require('minimist')(process.argv.slice(2));
+let inOsmPath = "data/ottawa-extracted.osm";
+
+if (args.help) {
+  const usage = `
+  Usage: node prepare-osm.js [osm_file]
+
+  where [osm_file] is path to osm extract
+  `;
+  process.stdout.write(`${usage}\n`);
+  process.exit(0);
+}
+
+try {
+  inOsmPath = args._[0];
+  fs.accessSync(inOsmPath, fs.F_OK);
+} catch (error) {
+  process.stderr.write("Specify valid path to osm file. See --help for details\n"/*,`${error}\n`*/);
+  process.exit(-1);
+}
 
 
-const inOsmCity = "data/ottawa-extracted.osm"
 
 const levels = [{name: "LTS-1", inLtsJsonFile: "data/lts/level_1.json", outLtsOsmile: "data/lts1/data.osm", ways: []},
                 {name: "LTS-2", inLtsJsonFile: "data/lts/level_2.json", outLtsOsmile: "data/lts2/data.osm", ways: []},
@@ -16,6 +37,13 @@ const levels = [{name: "LTS-1", inLtsJsonFile: "data/lts/level_1.json", outLtsOs
 const serializer = new XMLSerializer();
 let totalTagged = 0
 
+
+var bar = new progressBar('  :title [:bar] :percent', {
+    complete: '='
+  , incomplete: ' '
+  , width: 30
+  , total: 12805
+});
 
 console.time('Time')
 for (let i=0; i<levels.length; i++) {
@@ -37,12 +65,14 @@ for (let i=0; i<levels.length; i++) {
 for (let i in levels) {
 
   let level = levels[i]
-  fs.readFile(inOsmCity, 'utf-8', function (err, data) {
+  fs.readFile(inOsmPath, 'utf-8', function (err, data) {
     if (err) {
       throw err;
     }
-    console.log("Filtering out", level.ways.length, level.name, "ways");
+    console.log("Loading "+inOsmPath+" ...");
     const doc = new xmldom().parseFromString(data, 'application/xml');
+    console.log("Filtering out", level.ways.length, level.name, "ways");
+
 /*
     const nodes = doc.getElementsByTagName('node');
     let nodesDeleted = 0;
@@ -72,8 +102,11 @@ for (let i in levels) {
     console.log(level.name, "Nodes preserved:", nodesPreserved, "Nodes deleted:", nodesDeleted);
 */
     const ways = doc.getElementsByTagName('way');
+    bar.total = ways.length+10   //+10 to account for some garbage at the end
+    bar.curr = 0
     let waysDeleted = waysPreserved = waysService = 0;
     for (let i in ways) {
+      bar.tick(1, { title: i+' of ' +bar.total });
       let way = ways[i]
       for(let j in way.attributes){
         let attr = way.attributes[j]
@@ -108,7 +141,7 @@ for (let i in levels) {
       }
     }
 
-    console.log(level.name, "Ways preserved:", waysPreserved, "Ways service:", waysService, "Ways deleted:", waysDeleted);
+    console.log("\n",level.name, "Ways preserved:", waysPreserved, "Ways service:", waysService, "Ways deleted:", waysDeleted);
 
     fs.writeFile(level.outLtsOsmile, serializer.serializeToString(doc), function(err) {
       if(err) {

@@ -4,29 +4,8 @@ const fs = require('fs');
 const http = require('http');
 const galton = require('./galton');
 const defaults = require('./galton/defaults.js');
-const minimist = require('minimist');
-//const packagejson = require('./package.json');
 
-const config = minimist(process.argv.slice(2), {
-  string: [
-    'radius',
-    'cellSize',
-    'concavity',
-    'intervals',
-    'lengthThreshold',
-    'pid',
-    'port',
-    'resolution',
-    'sharpness',
-    'socket',
-    'units'
-  ],
-  boolean: ['cors', 'deintersect', 'sharedMemory'],
-  alias: {
-    h: 'help',
-    v: 'version'
-  },
-  default: {
+const config = {
     radius: defaults.radius,
     cellSize: defaults.cellSize,
     concavity: defaults.concavity,
@@ -38,46 +17,15 @@ const config = minimist(process.argv.slice(2), {
     sharedMemory: false,
     units: defaults.units
   }
-});
-/*
-if (config.version) {
-  process.stdout.write(`${packagejson.version}\n`);
-  process.exit(0);
-}*/
+  config.osrmPaths = ['data/lts1/data.osrm', 'data/lts2/data.osrm', 'data/lts3/data.osrm', 'data/lts4/data.osrm']
 
-if (config.help) {
-  const usage = `
-  Usage: galton [filename] [options]
-
-  where [filename] is path to OSRM data and [options] is any of:
-    --radius - distance to draw the buffer (default: ${config.radius})
-    --cellSize - the distance across each cell (default: ${config.cellSize})
-    --concavity - concaveman relative measure of concavity (default: ${config.concavity})
-    --deintersect - whether or not to deintersect the final isochrones (default: ${
-  config.deintersect
-})
-    --intervals - isochrones intervals in minutes (default: ${config.intervals})
-    --lengthThreshold - concaveman length threshold (default: ${config.lengthThreshold})
-    --pid - save PID to file
-    --port - port to run on (default: ${config.port})
-    --sharedMemory - use shared memory (default: ${config.sharedMemory})
-    --socket - use Unix socket instead of port
-    --units - either 'kilometers' or 'miles' (default: '${config.units}')
-    --version - returns running version then exits
-
-  galton@${packagejson.version}
-  node@${process.versions.node}
-  `;
-  process.stdout.write(`${usage}\n`);
-  process.exit(0);
-}
 
 try {
-  // eslint-disable-next-line
-  config.osrmPath = config._[0];
-  fs.accessSync(config.osrmPath, fs.F_OK);
+    for(let path of config.osrmPaths){
+      fs.accessSync(path, fs.F_OK);
+    }
 } catch (error) {
-  process.stderr.write(`${error}\n`);
+  process.stderr.write('File not found: '+path+ ` ${error}\n`);
   process.exit(-1);
 }
 
@@ -87,7 +35,7 @@ try {
     .map(parseFloat)
     .sort((a, b) => a - b);
 } catch (error) {
-  process.stderr.write(`${error}\n`);
+  process.stderr.write('Bad intervals: '+config.intervals+` ${error}\n`);
   process.exit(-1);
 }
 
