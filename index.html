@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset='utf-8' />
-    <title></title>
+    <title>Ottawa Cycling Isochrones</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
@@ -304,7 +304,7 @@
           dir: document.querySelector('input[name="dir"]:checked').value,
         };
 
-        var url = new URL("http://localhost:4000");
+        var url = new URL("http://ec2-34-214-224-151.us-west-2.compute.amazonaws.com:4000");
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
         (intervals.length > 0 ? intervals : [3, 6, 9, 12, 15]).forEach(interval => url.searchParams.append('intervals', interval));
 
