@@ -157,7 +157,6 @@
         // Set a UI indicator for dragging.
         canvas.style.cursor = 'grabbing';
         point.features[0].geometry.coordinates = [coords.lng, coords.lat];
-
         map.getSource('point').setData(point);
     }
 
@@ -318,6 +317,9 @@
             console.groupEnd();
             map.getSource('grid').setData(data);
             mapEl.classList.remove('loading');
+
+            //point.features[0].geometry.coordinates = data.features[5].geometry.coordinates;
+            //map.getSource('point').setData(point);
           })
           .catch((error) => {
             console.error(error);
