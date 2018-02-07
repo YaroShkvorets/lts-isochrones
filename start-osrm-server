@@ -1,0 +1,4 @@
+./node_modules/osrm/lib/binding/osrm-routed -p 5001 /home/ubuntu/projects/lts-isochrones/data/lts1/data.osrm &
+./node_modules/osrm/lib/binding/osrm-routed -p 5002 /home/ubuntu/projects/lts-isochrones/data/lts2/data.osrm &
+./node_modules/osrm/lib/binding/osrm-routed -p 5003 /home/ubuntu/projects/lts-isochrones/data/lts3/data.osrm &
+./node_modules/osrm/lib/binding/osrm-routed -p 5004 /home/ubuntu/projects/lts-isochrones/data/lts4/data.osrm &
