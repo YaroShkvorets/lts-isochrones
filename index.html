@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-  <div id='app' class='col12 contain fill-navy clip'>
+  <div id='app' class='col12 contain clip'>
     <div id='map'></div>
     <div class='pin-left pad2'>
       <a href='#settings' class='button'>Settings</a>
@@ -32,12 +32,12 @@
       <div id="m3" class="legend-item">3</div><div id="m6" class="legend-item">6</div><div id="m9" class="legend-item">9</div><div id="m12" class="legend-item">12</div><div id="m15" class="legend-item">15</div>
       <div class="legend-caption"><span class="lang-en" style="display: block;">&nbsp;minutes</span></div>
     </div>
-    <div id='settings' class='col4 pad2 fill-darken3 pin-left offcanvas-left animate scroll-styled'>
+    <div id='settings' class='col4 pad2 fill-darken2 pin-left offcanvas-left animate scroll-styled'>
       <a href='#' class='fill-darken2 pad1 icon close button fr'></a>
       <div class='clearfix'></div>
       <form>
         <h5>Cycling Level of Stress</h5>
-        <div class='rounded-toggle inline'>
+        <div class='rounded-toggle inline '>
           <input type='radio' name='dir' id='lts1' value='lts1'>
           <label for='lts1' >LTS-1</label>
           <input type='radio' name='dir' id='lts2' value='lts2'>
@@ -48,7 +48,7 @@
           <label for='lts4' >LTS-4</label>
         </div><br><br>
         <h5>Travel time</h5>
-        <fieldset class='intervals checkbox-pill clearfix'>
+        <fieldset class='intervals checkbox-pill clearfix '>
           <input type='checkbox' id='i3' checked='checked' value=3>
           <label for='i3' class='button icon check quiet'>3m</label>
           <input type='checkbox' id='i6' checked='checked' value=6>
@@ -271,6 +271,8 @@
               "circle-color": "#333"
           }
       });
+
+      fetchIsochrones();
 
       map.on('mouseenter', 'point', function() {
           map.setPaintProperty('point', 'circle-color', '#999');
