@@ -13,12 +13,7 @@
         #legend { font-weight: 300; font-size: 13px; z-index: 300; padding: 10px; position: absolute; text-align: center; color: #222; bottom: 20px; left: 50%; margin-left: -120px; width: 320px; background: rgba(255,255,255,0.75); }
         .legend-caption { display: inline-block; }
         .legend-item { display: inline-block; width: 30px; text-align: center; font-size: 12px; }
-      /*#m3 { background: rgba(0, 170, 255, 1); }
-        #m6 { background: rgba(0, 170, 255, 0.6); }
-        #m9 { background: rgba(0, 170, 255, 0.4); }
-        #m12 { background: rgba(0, 170, 255, 0.2); }
-        #m15 { background: rgba(0, 170, 255, 0.1); }*/
-        #m3 { background: #0055DB; }
+          #m3 { background: #0055DB; }
         #m6 { background: #3276DE; }
         #m9 { background: #6497E2; }
         #m12 { background: #96B8E6; }
@@ -27,7 +22,7 @@
     </style>
 </head>
 <body>
-  <div id='app' class='col12 contain fill-navy dark clip'>
+  <div id='app' class='col12 contain fill-navy clip'>
     <div id='map'></div>
     <div class='pin-left pad2'>
       <a href='#settings' class='button'>Settings</a>
@@ -89,6 +84,8 @@
       </form>
     </div>
   </div>
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.2.0/mapbox-gl-geocoder.css' type='text/css' />
 
   <script>
     var args = location.search.replace(/^\?/,'').split('&').reduce(function(o, param) {
@@ -117,6 +114,14 @@
         maxWidth: 100,
         unit: 'metric'
     }), 'bottom-right');
+
+    const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        bbox: [-76.385193,44.963826,-75.011902,45.614998],
+        zoom: 13
+    })
+
+    map.addControl(geocoder)
 
     var isDragging;
     var isCursorOverPoint;
@@ -355,7 +360,11 @@
       document.getElementById('legend-lts3').onclick = toggleLayer
       document.getElementById('legend-lts4').onclick = toggleLayer
 
-
+      geocoder.on('result', function(ev) {
+        point.features[0].geometry.coordinates = ev.result.geometry.coordinates;
+        map.getSource('point').setData(ev.result.geometry);
+        fetchIsochrones();
+    });
     });
 
   </script>
