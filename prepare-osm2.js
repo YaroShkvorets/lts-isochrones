@@ -69,17 +69,17 @@ console.log('<osm version="0.6" generator="osmfilter 1.4.3">')
 var xml = bigXml.createReader(inOsmPath, /^(node|way|bounds|relation)$/, { gzip: false });
 
 xml.on('record', function(record) {
-  var node = '<'+record.tag+' '
+  var node = '<'+record.tag
   for (var prop in record.attrs) {
-      node += prop + '="'+record.attrs[prop]+'" '
+      node += ' '+prop + '="'+record.attrs[prop].replace('<','&#60;').replace('>','&#62;').replace("'",'&#39;')+'"'
   }
   if(record.children && record.children.length){
 
     node+='>\n'
     for (var child of record.children) {
-        node += '\t<'+child.tag+' '
+        node += '\t<'+child.tag
         for (var prop in child.attrs) {
-            node += prop + '="'+child.attrs[prop].replace('<','&#60;').replace('>','&#62;')+'" '
+            node += ' '+prop + '="'+child.attrs[prop].replace('<','&#60;').replace('>','&#62;').replace("'",'&#39;')+'"'
         }
         node+='/>\n'
     }
