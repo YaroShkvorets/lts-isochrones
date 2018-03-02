@@ -12,8 +12,10 @@ download:
 	wget http://mobiletest.beyond2020.com/bikemap/data/level_4.json -O data/lts/level_4.json
 
 prep:
-	node --max-old-space-size=4096 prepare-osm.js data/ottawa-extracted.osm
-	cp data/ottawa-extracted.osm data/lts4/data.osm
+	node prepare-osm.js data/ottawa-extracted.osm 1 > data/lts1/data.osm
+	node prepare-osm.js data/ottawa-extracted.osm 2 > data/lts2/data.osm
+	node prepare-osm.js data/ottawa-extracted.osm 3 > data/lts3/data.osm
+	node prepare-osm.js data/ottawa-extracted.osm 4 > data/lts4/data.osm
 
 osrm:
 	./node_modules/osrm/lib/binding/osrm-extract data/lts1/data.osm -p ./node_modules/osrm/profiles/bicycle.lua

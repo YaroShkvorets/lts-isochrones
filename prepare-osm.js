@@ -72,7 +72,7 @@ xml.on('record', function(record) {
   var node = '<'+record.tag
   let id=0
   for (var prop in record.attrs) {
-      node += ' '+prop + '="'+record.attrs[prop].replace('<','&#60;').replace('>','&#62;').replace("'",'&#39;')+'"'
+      node += ' '+prop + '="'+record.attrs[prop].replace(/</g,'&#60;').replace(/>/g,'&#62;').replace(/'/g,'&#39;').replace(/&/g,'&#38;').replace(/\"/g, '')+'"'
       if(prop=='id'){
         id = parseInt(record.attrs[prop])
       }
@@ -87,7 +87,7 @@ xml.on('record', function(record) {
     for (var child of record.children) {
         node += '\t<'+child.tag
         for (var prop in child.attrs) {
-            node += ' '+prop + '="'+child.attrs[prop].replace('<','&#60;').replace('>','&#62;').replace("'",'&#39;')+'"'
+            node += ' '+prop + '="'+child.attrs[prop].replace(/</g,'&#60;').replace(/>/g,'&#62;').replace(/'/g,'&#39;').replace(/&/g,'&#38;').replace(/\"/g, '')+'"'
         }
         node+='/>\n'
     }
