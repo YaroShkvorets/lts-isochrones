@@ -13,10 +13,17 @@ download:
 
 tiles:
 	export MAPBOX_ACCESS_TOKEN="sk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqZWFwbXdsMDA4OWkzM2xhdjB0dmZqb2YifQ.sMrDpEWvtIM39hFZqkpLNQ"
+<<<<<<< HEAD
 	mapbox upload zzptichka.53bf2frg data/lts/level_1.json
 	mapbox upload zzptichka.771hbw7i data/lts/level_2.json
 	mapbox upload zzptichka.5jgkszgd data/lts/level_3.json
 	mapbox upload zzptichka.4ioiilcy data/lts/level_4.json
+=======
+	mapbox upload zzptichka.53bf2frg data/level_1.json
+	mapbox upload zzptichka.771hbw7i data/level_2.json
+	mapbox upload zzptichka.5jgkszgd data/level_3.json
+	mapbox upload zzptichka.4ioiilcy data/level_4.json
+>>>>>>> ed6fd063682d42518b176b1dc696364efdbb4d61
 
 prep:
 	node prepare-osm.js data/ottawa-extracted.osm 1 > data/lts1/data.osm
